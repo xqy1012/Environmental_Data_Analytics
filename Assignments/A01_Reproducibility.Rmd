@@ -1,6 +1,6 @@
 ---
 title: "Assignment 1: Reproducibility, Workflow, Version Control"
-author: "Student Name"
+author: "Qianyi Xia"
 output: pdf_document
 geometry: margin=2.54cm
 ---
@@ -30,22 +30,24 @@ The completed exercise is due on Thursday, 17 January, 2018 before class begins.
 ### Question
 Why are reproducible practices becoming the norm in data analytics?
 
-> Answer: 
+> Answer: Reproducible practice can recreate the final reported results accuratey and can communicate the work you have done to someone else (The Practice of Reproducible Research, 2018). Today, under a rapid expanding world of scientific data analysis, and computing, these reproducible practices become the norm because: 1)it can help to record all steps, linking the final result to the inital data, and make then all availabe to collegue or other scientists; 2)reproducibility allow the research focus to move up a level and spending more time focus on the entire scientific workflow, and later other scientists are able to use the previous practice sustainably; 3)it can be apply to almost every types of research or analysis.
+
 
 ### Question
 What are your previous experiences with data analytics, R, and Git? Include both formal and informal training.
 
-> Answer: 
+
+> Answer: I have audit a course learning Java and used Github but created or saved nothing on it. Then at Duke, I took ENV 710 to learn R skills. I had good experience in studying data analysis.
 
 ### Question
 Are there any components of the course about which you feel confident?
 
-> Answer: 
+> Answer: I enjoyed data analysis learning last semester, because I did bad in midterm in writing part, but I did really good in the R analysis the final exam, that makes me feel confidence in using tools for real case study. And I actually spend lot of time learning from online sources when I failed to follow everything in class.
 
 ### Question
 Are there any components of the course about which you feel apprehensive?
 
-> Answer: 
+> Answer: This happened last semester, when I got stuck in one step, I kept trying to solve it for more than 5-6 hours and still can't figure out. I kind of afraid of meeting those situations. 
 
 
 ## 2) GitHub
@@ -53,6 +55,6 @@ Are there any components of the course about which you feel apprehensive?
 ### Your Repository
 Provide a link below to your course repository in GitHub. Make sure you have pulled all recent changes from the course repository (https://github.com/KateriSalk/Environmental_Data_Analytics) and that you have updated your course README file. 
 
-> Answer: 
+> Answer: https://github.com/xqy1012/Environmental_Data_Analytics
 
 
