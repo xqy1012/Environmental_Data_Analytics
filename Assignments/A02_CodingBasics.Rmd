@@ -40,8 +40,8 @@ hundred_sequence <- seq(1,100,4)
 #assign a sequence name called hundred_sequence, from 1 to 100 increase everytime by 4.
 mean(hundred_sequence) #Compute the mean of the sequence
 median(hundred_sequence) #Compute the median of the sequence
-mean(hundred_sequence)==median(hundred_sequence) 
-#conditional statements to ask R if mean equal to median for this hundred_sequence.
+mean(hundred_sequence)>median(hundred_sequence) 
+#conditional statements to ask R if mean is greater than median for this hundred_sequence.
 ```
 
 ## Basics Day 2
