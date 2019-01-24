@@ -50,7 +50,7 @@ At the same time, you should also load your theme if you are doing any data visu
 
 ```{r}
 # Load package
-library(tidyverse)
+library(tidyverse) #如果用require 它不会告诉你哪里有问题
 ```
 
 ### Import your datasets
