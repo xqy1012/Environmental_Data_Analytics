@@ -74,7 +74,7 @@ USGS.flow.data <- read.csv("./Data/Raw/USGS_Site02085000_Flow_Raw.csv")
 #read.csv("./Data/Raw/USGS_Site02085000_Flow_Raw.csv")
 
 # Another option is to choose with your browser
-# read.csv(file.choose())
+#read.csv(file.choose())
 
 # To import .txt files, use read.table rather than read.csv
 #read.table()
@@ -121,7 +121,7 @@ summary(USGS.flow.data$gage.height.mean)
 ```
 
 What happened to blank cells in the spreadsheet when they were imported into R?
-> ANSWER: 
+> ANSWER: pay attention to the class, in 
 
 ## TIPS AND TRICKS: SPREADSHEETS
 
