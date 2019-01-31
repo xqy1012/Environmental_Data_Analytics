@@ -1,6 +1,6 @@
 ---
 title: "Assignment 3: Data Exploration"
-author: "Student Name"
+author: "Qianyi Xia"
 output: pdf_document
 geometry: margin=2.54cm
 ---
@@ -29,14 +29,16 @@ The completed exercise is due on Thursday, 31 January, 2019 before class begins.
 
 Check your working directory, load necessary packages (tidyverse), and upload the North Temperate Lakes long term monitoring dataset for the light, temperature, and oxygen data for three lakes (file name: NTL-LTER_Lake_ChemistryPhysics_Raw.csv). Type your code into the R chunk below.
 ```{r}
-
+getwd() #check working directory "/Users/xiaqianyi/Documents/current semester/ENV 872/ENV 872/Assignments"
+library(tidyverse) #load package
+LakeChem.data <- read.csv("../Data/Raw/NTL-LTER_Lake_ChemistryPhysics_Raw.csv") #relative directory
 ```
 
 ## 2) Learn about your system
 
 Read about your dataset in the NTL-LTER README file. What are three salient pieces of information you gained from reading this file?
 
-> ANSWER: 
+> ANSWER: 1. Explained the background of the data, there are 14 sites, the different characteristic of the lake they study will investigate including depth, dissolved oxygen, temperature, etc. 2.The way the data was sampled. For example the depth intervals of the lake is sampled by the percentage of depth from the surface instead of counting exact number of meters. 3. The carbon data was colected through year 1984 - 2016, while the nutrients data was collected through 1991 - 2016.
 
 ## 3) Obtain basic summaries of your data
 
@@ -49,27 +51,39 @@ Write R commands to display the following information:
 5. summary of lakename, depth, and temperature
 
 ```{r}
-# 1
+# 1 dimensions
+dim(LakeChem.data)
 
-# 2
+# 2 class
+class(LakeChem.data)
 
-# 3
+# 3 first 8 rows of the dataset
+head(LakeChem.data,8)
 
-# 4
+# 4 class of the variables lakename, sampledate, depth, and temperature
+class(LakeChem.data$lakename)
+class(LakeChem.data$sampledate)
+class(LakeChem.data$depth)
+class(LakeChem.data$temperature_C)
 
-# 5
+# 5 summary of lakename, depth, and temperature
+summary(LakeChem.data$lakename)
+summary(LakeChem.data$depth)
+summary(LakeChem.data$temperature_C)
 
 ```
 
 Change sampledate to class = date. After doing this, write an R command to display that the class of sammpledate is indeed date. Write another R command to show the first 10 rows of the date column. 
 
 ```{r}
-
+LakeChem.data$sampledate <- as.Date(LakeChem.data$sampledate, format= "%m/%d/%y")
+class(LakeChem.data$sampledate)
+head(LakeChem.data$sampledate,10)
 ```
 
 Question: Do you want to remove NAs from this dataset? Why or why not?
 
-> ANSWER: 
+> ANSWER: No, I don't want to remove the NAs. Because there are different types of NAs, while in this dataset, some NAs may because of the below detection value. While for the dissolved oxygen column, the NA may be the value not available. If we remove the NAs arbitrary, the small values may all be removed, there will be big bias with our results. We should think about how to deal with different NAs then decide if we should remove them or assign values to these NAs.
 
 
 ## 4) Explore your data graphically
@@ -85,31 +99,40 @@ Write R commands to display graphs depicting:
 7. Scatterplot of temperature by depth
 
 ```{r}
-# 1
+# 1 Bar chart of temperature counts for each lake
+ggplot(LakeChem.data, aes(x=LakeChem.data$temperature_C))+
+  geom_bar(aes(fill=LakeChem.data$lakename))
+# 2  Histogram of count distributions of temperature (all temp measurements together)
+ggplot(LakeChem.data) +
+  geom_histogram(aes(x=LakeChem.data$temperature_C))
+# 3 Change histogram from 2 to have a different number or width of bins
+ggplot(LakeChem.data) +
+  geom_histogram(aes(x=LakeChem.data$temperature_C), bins = 100)
+# 4 Frequency polygon of temperature for each lake. Choose different colors for each lake
+ggplot(LakeChem.data,aes(x = LakeChem.data$temperature_C, fill=LakeChem.data$lakename, colour=LakeChem.data$lakename))+
+geom_freqpoly() 
 
-# 2
-
-# 3
-
-# 4
-
-# 5
-
-# 6
-
-# 7 
-
+# 5 Boxplot of temperature for each lake
+ggplot(LakeChem.data)+
+  geom_boxplot(aes(x=LakeChem.data$lakename, y=LakeChem.data$temperature_C, fill=LakeChem.data$lakename))
+  
+# 6 Boxplot of temperature based on depth, with depth divided into 0.25 m increments
+ggplot(LakeChem.data)+
+  geom_boxplot(aes(x=LakeChem.data$depth, y=LakeChem.data$temperature_C, group=cut_width(LakeChem.data$depth, 0.25)))
+# 7 Scatterplot of temperature by depth
+ggplot(LakeChem.data)+
+  geom_point(aes(x=LakeChem.data$depth, y=LakeChem.data$temperature_C))
 ```
 ## 5) Form questions for further data analysis
 
 What did you find out about your data from the basic summaries and graphs you made? Describe in 4-6 sentences.
 
-> ANSWER: 
+> ANSWER: There are 9 Lakes in this dataset. Among all the temperatures measured, most of the temperatures are between 0 to 10 C, and the second most measurements of temperatures are between 20 to 25 C. Peter Lake has the most temperature data collected among the 9 lakes. The Central Long lake has the highest median temperature, while East Long lake and Tuesday Lake have low median temperature among the 9 lakes. And from the figure of temperature by depth, we can get the information that as the depth go deeper in the lake, the temperature will likely to go down and at the same time the temperature range become more stable for there are less surface interactions between water and above environment.
 
-What are 3 further questions you might ask as you move forward with  analysis of this dataset?
+What are 3 further questions you might ask as you move forward with analysis of this dataset?
 
-> ANSWER 1: 
+> ANSWER 1: How does the dissolved oxygen change as the depth of the Lake go deeper?
 
-> ANSWER 2: 
+> ANSWER 2: Is there a relationship between the concentration of dissolved oxygen and surface irradiance?
 
-> ANSWER 3: 
+> ANSWER 3: From year 1991 to 2016, how has the temperature of the lakes changed? Does the temperature increased probably due to global warming?
