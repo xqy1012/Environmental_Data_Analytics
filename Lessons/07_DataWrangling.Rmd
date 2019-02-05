@@ -72,14 +72,14 @@ A few relevant commands:
 class(NTL.phys.data$lakeid)
 class(NTL.phys.data$depth)
 
-# matrix filtering
+# matrix filtering, include the comma because you are telling it in a matrix subseting.
 NTL.phys.data.surface1 <- NTL.phys.data[NTL.phys.data$depth == 0,]
 
 # dplyr filtering
 NTL.phys.data.surface2 <- filter(NTL.phys.data, depth == 0)
 NTL.phys.data.surface3 <- filter(NTL.phys.data, depth < 0.25)
 
-# Did the methods arrive at the same result?
+# Did the methods arrive at the same result? The row names are different
 head(NTL.phys.data.surface1)
 dim(NTL.phys.data.surface1)
 head(NTL.phys.data.surface2)
@@ -107,11 +107,11 @@ NTL.phys.data.JunethruOctober4 <- filter(NTL.phys.data, daynum %in% c(152:304))
 # filter NTL.phys.data for the year 1999
 # what code do you need to use, based on the class of the variable?
 class(NTL.phys.data$year4)
-
+year1999 <- filter(NTL.phys.data, year4==1999)
 # Exercise: 
 # filter NTL.phys.data for Tuesday Lake from 1990 through 1999.
 
-
+TuesdayLake9099<- filter(NTL.phys.data, year4 %in% c(1990:1999)&lakename=="Tuesday Lake")
 ```
 Question: Why don't we filter using row numbers?
 
@@ -127,15 +127,16 @@ NTL.phys.data.depth.descending <- arrange(NTL.phys.data, desc(depth))
 
 # Exercise: 
 # Arrange NTL.phys.data by temperature, in descending order. 
-# Which dates, lakes, and depths have the highest temperatures?
-
-
+# Which dates, lakes, and depths have the highest temperatures? East Long Lake  1998    197    7/16/98   0.5          34.1   
+NTL.phys.data.T.ascending <- arrange(NTL.phys.data, desc(temperature_C))
+NTL.phys.data.T.ascending
 ```
 ### Select
 
 Selecting allows us to choose certain columns (variables) in our dataset.
 
 ```{r}
+#Select 4 columns, column Lakename, sampledata through temp
 NTL.phys.data.temps <- select(NTL.phys.data, lakename, sampledate:temperature_C)
 
 ```
@@ -155,6 +156,7 @@ Sometimes we will want to perform multiple commands on a single dataset on our w
 Let's say we want to take our raw dataset (NTL.phys.data), *then* filter the data for Peter and Paul lakes, *then* select temperature and observation information, and *then* add a column for temperature in Fahrenheit: 
 
 ```{r}
+#first line put data name
 NTL.phys.data.processed <- 
   NTL.phys.data %>%
   filter(lakename == "Paul Lake" | lakename == "Peter Lake") %>%
