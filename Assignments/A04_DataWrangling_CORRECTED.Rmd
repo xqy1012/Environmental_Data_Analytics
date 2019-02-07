@@ -1,6 +1,6 @@
 ---
 title: "Assignment 4: Data Wrangling"
-author: "Student Name"
+author: "Qianyi Xia"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
@@ -33,9 +33,27 @@ The completed exercise is due on Thursday, 7 February, 2019 before class begins.
 2. Generate a few lines of code to get to know your datasets (basic data summaries, etc.).
 
 ```{r}
-#1
+#1 Preparation
+getwd() 
+library(tidyverse)
+library('knitr')
+EPA_Ozone_2017.data <- read.csv("../Data/Raw/EPAair_O3_NC2017_raw.csv")
+EPA_Ozone_2018.data <- read.csv("../Data/Raw/EPAair_O3_NC2018_raw.csv")
+EPA_PM25_2017.data <- read.csv("../Data/Raw/EPAair_PM25_NC2017_raw.csv")
+EPA_PM25_2018.data <- read.csv("../Data/Raw/EPAair_PM25_NC2018_raw.csv")
 
-#2
+#2 Check Data basic information
+head(EPA_Ozone_2017.data)
+head(EPA_PM25_2017.data)
+colnames(EPA_Ozone_2017.data)
+colnames(EPA_PM25_2017.data)
+summary(EPA_Ozone_2017.data)
+summary(EPA_PM25_2017.data)
+dim(EPA_Ozone_2017.data)
+dim(EPA_Ozone_2018.data)
+dim(EPA_PM25_2017.data)
+dim(EPA_PM25_2018.data)
+
 ```
 
 ## Wrangle individual datasets to create processed files.
@@ -45,13 +63,31 @@ The completed exercise is due on Thursday, 7 February, 2019 before class begins.
 6. Save all four processed datasets in the Processed folder.
 
 ```{r}
-#3
-
-#4
-
-#5
-
-#6
+#3 format data
+EPA_Ozone_2017.data$Date <-as.Date(EPA_Ozone_2017.data$Date, format = "%m/%d/%y")
+EPA_Ozone_2018.data$Date <-as.Date(EPA_Ozone_2018.data$Date, format = "%m/%d/%y")
+EPA_PM25_2018.data$Date <-as.Date(EPA_PM25_2018.data$Date, format = "%m/%d/%y")
+EPA_PM25_2017.data$Date <-as.Date(EPA_PM25_2017.data$Date, format = "%m/%d/%y")
+class(EPA_Ozone_2017.data$Date)
+#4 Process data
+EPA_Ozone_2017.data.AQI <- select(EPA_Ozone_2017.data, Date, DAILY_AQI_VALUE, Site.Name, AQS_PARAMETER_DESC, COUNTY, SITE_LATITUDE, SITE_LONGITUDE)
+EPA_Ozone_2018.data.AQI <- select(EPA_Ozone_2018.data, Date, DAILY_AQI_VALUE, Site.Name, AQS_PARAMETER_DESC, COUNTY, SITE_LATITUDE, SITE_LONGITUDE)
+EPA_PM25_2017.data.AQI <-
+  EPA_PM25_2017.data %>%
+  select(Date, DAILY_AQI_VALUE, Site.Name, AQS_PARAMETER_DESC, 
+         COUNTY, SITE_LATITUDE, SITE_LONGITUDE)
+EPA_PM25_2018.data.AQI <-
+  EPA_PM25_2018.data %>%
+  select(Date, DAILY_AQI_VALUE, Site.Name, AQS_PARAMETER_DESC, 
+         COUNTY, SITE_LATITUDE, SITE_LONGITUDE)
+#5 fill cells
+EPA_PM25_2017.data.AQI$AQS_PARAMETER_DESC <- "PM2.5" 
+EPA_PM25_2018.data.AQI$AQS_PARAMETER_DESC <- "PM2.5" 
+#6 Save Processed
+write.csv(EPA_Ozone_2017.data.AQI, row.names = F, file = "../Data/Processed/EPA_Ozone_2017_AQI.csv")
+write.csv(EPA_Ozone_2018.data.AQI, row.names = F, file = "../Data/Processed/EPA_Ozone_2018_AQI.csv")
+write.csv(EPA_PM25_2017.data.AQI, row.names = F, file = "../Data/Processed/EPA_PM25_2017_AQI.csv")
+write.csv(EPA_PM25_2018.data.AQI, row.names = F, file = "../Data/Processed/EPA_PM25_2018_AQI.csv")
 
 ```
 
@@ -68,14 +104,26 @@ The completed exercise is due on Thursday, 7 February, 2019 before class begins.
 11. Save your processed dataset with the following file name: "EPAair_O3_PM25_NC1718_Processed.csv"
 
 ```{r}
-#8
+#7 combine dataset to total
+library(lubridate)
+EPA_total_Pollution.data <- rbind(EPA_Ozone_2017.data.AQI, 
+                                  EPA_Ozone_2018.data.AQI, 
+                                  EPA_PM25_2017.data.AQI, 
+                                  EPA_PM25_2018.data.AQI)
 
-#9
+#8 Sites= Blackstone, Bryson City, Triple Oak; add month and year
+EPA_total_Pollution.data.processed <-
+  EPA_total_Pollution.data %>%
+  filter(Site.Name == "Blackstone"| Site.Name == "Bryson City"| Site.Name == "Triple Oak") %>%
+   mutate(month = month(Date)) %>%
+  mutate(day=day(Date))
 
+#9 Spread Ozone and PM2.5
+EPA_total_Pollution.data.spread <- spread(EPA_total_Pollution.data.processed, AQS_PARAMETER_DESC, DAILY_AQI_VALUE)
 #10
-
+dim(EPA_total_Pollution.data.spread)
 #11
-
+write.csv(EPA_total_Pollution.data.spread, row.names = F, file = "../Data/Processed/EPAair_O3_PM25_NC1718_Processed.csv.csv")
 ```
 
 
@@ -86,11 +134,31 @@ b. A summary table of the mean, minimum, and maximum AQI values of O3 and PM2.5 
 13. Display the data frames.
 
 ```{r}
-#12a
+#12a mean AQI values for O3 and PM2.5 by month
+AirPollution_Summary_ByMonth <- 
+  EPA_total_Pollution.data.spread %>%
+  group_by(month) %>%
+  filter(!is.na(Ozone) & !is.na(PM2.5)) %>%
+  summarise(PM2.5AQI = mean(PM2.5),
+            OzoneAQI = mean(Ozone))
+#12b the mean, minimum, and maximum AQI values of O3 and PM2.5 for each site
+AirPollution_Summary_BySite <- 
+  EPA_total_Pollution.data.spread %>%
+  group_by(Site.Name) %>%
+  filter(!is.na(Ozone) & !is.na(PM2.5)) %>%
+  summarise(MeanPM2.5AQI = mean(PM2.5),
+            MeanOzoneAQI = mean(Ozone),
+            minPM2.5AQI = min(PM2.5),
+            minOzoneAQI = min(Ozone),
+            maxPM2.5AQI = max(PM2.5),
+            maxOzoneAQI = max(Ozone))
+#13 display dataframe
+library(knitr)
+knitr::kable(AirPollution_Summary_ByMonth,
+      caption = "Mean AQI values for O3 and PM2.5 in different Months" )
+knitr::kable(AirPollution_Summary_BySite,
+      caption = "Mean, minimum, and maximum AQI values of O3 and PM2.5 for each site" )
 
-#12b
-
-#13
 
 ```
 

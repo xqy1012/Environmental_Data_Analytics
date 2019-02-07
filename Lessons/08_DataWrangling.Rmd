@@ -112,9 +112,9 @@ write.csv(NTL.phys.nutrient.data.PeterPaul, row.names = FALSE,
 A package that makes coercing date much easier is `lubridate`. A guide to the package can be found at https://lubridate.tidyverse.org/. The cheat sheet within that web page is excellent too. This package can do many things (hint: look into this package if you are having unique date-type issues), but today we will be using two of its functions for our NTL dataset. 
 
 ```{r}
-#install.packages(lubridate)
+install.packages("lubridate")
 library(lubridate)
-
+library(tidyverse)
 # add a month column to the dataset
 NTL.phys.nutrient.data.PeterPaul <- mutate(NTL.phys.nutrient.data.PeterPaul, month = month(sampledate)) 
 
