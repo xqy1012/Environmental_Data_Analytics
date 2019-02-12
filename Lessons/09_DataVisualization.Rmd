@@ -22,7 +22,7 @@ library(tidyverse)
 PeterPaul.chem.nutrients <- read.csv("./Data/Processed/NTL-LTER_Lake_Chemistry_Nutrients_PeterPaul_Processed.csv")
 PeterPaul.nutrients.gathered <- read.csv("./Data/Processed/NTL-LTER_Lake_Nutrients_PeterPaulGathered_Processed.csv")
 PeterPaul.chem.nutrients.summaries <- read.csv("./Data/Processed/NTL-LTER_Lake_Summaries_PeterPaul_Processed.csv")
-EPAair <- read.csv("./Data/Processed/EPAair_O3PM25_3sites1718_processed.csv")
+EPAair <- read.csv("./Data/Processed/EPAair_O3_PM25_NC1718_Processed.csv.csv")
 
 EPAair$Date <- as.Date(EPAair$Date, format = "%Y-%m-%d")
 PeterPaul.chem.nutrients$sampledate <- as.Date(PeterPaul.chem.nutrients$sampledate, format = "%Y-%m-%d")
@@ -69,25 +69,31 @@ Here are some commonly used aesthetic types that can be manipulated in ggplot:
 ### Plotting continuous variables over time: Scatterplot
 ```{r, fig.height = 3, fig.width = 4, warning = FALSE}
 # Scatterplot
-ggplot(EPAair, aes(x = Date, y = Ozone)) + 
-  geom_point()
-
+ggplot(EPAair, aes(x = Date, y = Ozone)) +  #inside aesthetic put x,y
+  geom_point() #called a layer, within this layer, specify asethetics;
+#geom_point(df2,), you can have another dataframe with some factor matches.
 O3plot <- ggplot(EPAair) +
   geom_point(aes(x = Date, y = Ozone))
 print(O3plot)
 
-# Fix this code
+# Fix this code # 在geom后面aes后面的括号里，都是base on dataset的，假如color blue是一个general的东西，就给它放在括号外面就好了。
 O3plot2 <- ggplot(EPAair) +
-  geom_point(aes(x = Date, y = Ozone, color = "blue"))
+  geom_point(aes(x = Date, y = Ozone, color = 'blue'))+
+scale_color_manual(values = c('blue' = 'blue'))
 print(O3plot2)
 
 # Add additional variables
+library(lubridate)
+EPAair<-
+  EPAair%>%
+ mutate(month = month(Date)) %>%
+  mutate(year=year(Date))
 PMplot <- 
   ggplot(EPAair, aes(x = month, y = PM2.5, shape = as.factor(year), color = Site.Name)) +
   geom_point()
 print(PMplot)
 
-# Separate plot with facets
+# Separate plot with facets #One column with different levels
 PMplot.faceted <-
   ggplot(EPAair, aes(x = month, y = PM2.5, shape = as.factor(year))) +
   geom_point() +
@@ -100,7 +106,7 @@ PMplot.faceted2 <-
   facet_grid(Site.Name ~ year)
 print(PMplot.faceted2)
 
-# Filter dataset within plot building
+# Filter dataset within plot building #take subset in the first line. The first line after GGplot should always indicate a dataset
 O3plot.Blackstone <- 
   ggplot(subset(EPAair, Site.Name == "Blackstone"), aes(x = Date, y = Ozone)) + 
   geom_point() +
@@ -112,12 +118,20 @@ print(O3plot.Blackstone)
 # 1. 
 # Plot surface temperatures by day of  year. 
 # Color your points by year, and facet by lake in two rows.
-
+PeterTemp <- 
+  ggplot(subset(PeterPaul.chem.nutrients,depth=0),
+aes(x = daynum, y = temperature_C, color= year4))+
+  geom_point()+
+  facet_wrap(vars(lakename),nrow = 2)
+print(PeterTemp)
 
 #2. 
 # Plot temperature by date. Color your points by depth.
 # Change the size of your point to 0.5
-
+ggplot(PeterPaul.chem.nutrients, aes(x=
+                                       sampledate, y=temperature_C,
+                                     color=depth))+
+  geom_point(size=0.5)
 
 ```
 ### Plotting the relationship between two continuous variables: Scatterplot
@@ -129,7 +143,7 @@ lightvsDO <-
   geom_point()
 print(lightvsDO)
 
-# Adjust axes
+# Adjust axes #lots of light, phtotosynthesis, exchange with the outside oxygen
 lightvsDOfixed <- 
   ggplot(PeterPaul.chem.nutrients, aes(x = irradianceWater, y = dissolvedOxygen)) +
   geom_point() +
@@ -139,10 +153,10 @@ print(lightvsDOfixed)
 
 # Depth in the fields of limnology and oceanography is on a reverse scale
 tempvsdepth <- 
-  ggplot(PeterPaul.chem.nutrients, aes(x = temperature_C, y = depth)) +
-  #ggplot(PeterPaul.chem.nutrients, aes(x = temperature_C, y = depth, color = daynum)) +
+  #ggplot(PeterPaul.chem.nutrients, aes(x = temperature_C, y = depth)) +
+  ggplot(PeterPaul.chem.nutrients, aes(x = temperature_C, y = depth, color = daynum)) +
   geom_point() +
-  scale_y_reverse()
+  scale_y_reverse() #make a reverse on y axes
 print(tempvsdepth)
 
 NvsP <-
