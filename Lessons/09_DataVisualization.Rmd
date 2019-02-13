@@ -163,15 +163,17 @@ NvsP <-
   ggplot(PeterPaul.chem.nutrients, aes(x = tp_ug, y = tn_ug, color = depth)) +
   geom_point() #+
   #geom_smooth(method = lm) +
-  #geom_abline(aes(slope = 16, intercept = 0))
+  #geom_abline(aes(slope = 16, intercept = 0), lty=2) #这条线可以看出多数点是大于16:1的比例
 print(NvsP)
 
 # Exercise: Plot relationships between air quality measurements
 
 # 1. 
-# Plot AQI values for ozone by PM2.5, colored by site. 
+# Plot AQI values for ozone (y) by PM2.5 (x), colored by site. 
 # Add a line of best fit for the linear regression of these variables.
-
+AQIrelation <- ggplot(EPAair, aes(x=PM2.5, y=Ozone, color= Site.Name))+
+  geom_point()+
+geom_smooth(method = lm)
   
 ```
 
@@ -180,20 +182,20 @@ print(NvsP)
 ```{r, fig.height = 3, fig.width = 4, warning = FALSE}
  # Barplot + error bars
 PeterPaul.nutrient.summaries <- PeterPaul.nutrients.gathered %>%
-  group_by(lakename, nutrient) %>%
+  group_by(lakename, nutrient) %>% #group by function
   summarise(sd = sd(concentration), 
             mean = mean(concentration))
 
 Nutrientplot <- 
   ggplot(PeterPaul.nutrients.gathered) +
   geom_bar(aes(x = lakename, y = concentration, fill = as.factor(nutrient)), # why did we use fill?
-           position = "dodge", stat = "summary", fun.y = "mean")             # what's happening here?
+           position = "dodge",  stat = "summary", fun.y = "mean")             # what's happening here? if not dodge, they will all stack in one stack.
 print(Nutrientplot)
 
 Nutrientplot2 <- 
   ggplot(PeterPaul.nutrient.summaries, aes(x = lakename, y = mean, fill = as.factor(nutrient))) + #
-  geom_bar(stat = "identity", position = "dodge") + # what does the stat command do?
-  geom_errorbar(aes(ymin = mean-sd, ymax = mean+sd), # how do we specify error bars?
+  geom_bar(stat = "identity", position = "dodge") + # what does the stat command do? In here we already have a number for our mean, we dont need summary here, instead we put identity.
+  geom_errorbar(aes(ymin = mean-sd, ymax = mean+sd), # how do we specify error bars? 
                  position = "dodge")
 print(Nutrientplot2)
 
@@ -241,8 +243,20 @@ print(Nutrientplot7)
 # Create a bar chart plus standard deviation error bars for PM2.5, divided by year. 
 # Create separate bars for each site. 
 
+EPAairsummary <- EPAair %>%
+  group_by(Site.Name, year) %>% 
+  summarise(sd = (sd(PM2.5, na.rm=T)), 
+            mean = (mean(PM2.5, na.rm = T))) 
+  
+PM2.5error <- 
+  ggplot(EPAairsummary, aes(x = as.factor(year), y = mean, fill = as.factor(Site.Name))) + #
+  geom_bar(stat = "identity", position = "dodge") +
+  geom_errorbar(aes(ymin = mean-sd, ymax = mean+sd), 
+                 position = "dodge")
+
 # 2. 
 # Create a new plot that better depicts the distribution of PM2.5 concentrations. 
 # Divide your graph by year and site.
+
 
 ```
