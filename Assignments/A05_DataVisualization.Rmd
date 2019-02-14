@@ -34,8 +34,20 @@ The completed exercise is due on Thursday, 14 February, 2019 before class begins
 
 ```{r}
 #1
-
+getwd()
+library(tidyverse)
+PeterPaul_Processed <-read.csv("./Data/Processed/NTL-LTER_Lake_Nutrients_PeterPaulGathered_Processed.csv")
+USGS_Stream <- read.csv("./Data/Raw/USGS_Site02085000_Flow_Raw.csv")
+EPAtox <- read.csv("./Data/Raw/ECOTOX_Neonicotinoids_Mortality_raw.csv")
 #2
+USGS_Stream$datetime <- as.Date(USGS_Stream$datetime, format = "%y%m%d")
+create.early.dates <- (function(d) { paste0(ifelse(d > 181231,"19","20"),d) })
+USGS_Stream$datetime <- create.early.dates(USGS_Stream$datetime)
+USGS_Stream$datetime <- as.Date(USGS_Stream$datetime, format = "%Y%m%d")
+
+PeterPaul_Processed$sampledate<-as.Date(PeterPaul_Processed$sampledate, format = "%Y%m%d")
+# EPAtox$Pub..Year <- factor(EPAtox$Pub..Year, format = '%Y')
+
 ```
 ## Define your theme
 3. Build a theme and set it as your default theme.
@@ -54,7 +66,9 @@ Hint: a good way to build graphs is to make them ugly first and then create more
 
 ```{r}
 #4
-
+PeterPaulP_PO4 <- 
+  ggplot(subset(PeterPaul_Processed, nutients==), aes(x=))
+facet_wrap(vars(lakename), ncol = 2)
 ```
 
 
