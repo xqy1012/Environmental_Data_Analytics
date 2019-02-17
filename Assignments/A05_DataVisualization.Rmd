@@ -36,16 +36,25 @@ The completed exercise is due on Tuesday, 19 February, 2019 before class begins.
 #1
 getwd()
 library(tidyverse)
-PeterPaul_Processed <-read.csv("./Data/Processed/NTL-LTER_Lake_Nutrients_PeterPaulGathered_Processed.csv")
-USGS_Stream <- read.csv("./Data/Raw/USGS_Site02085000_Flow_Raw.csv")
-EPAtox <- read.csv("./Data/Raw/ECOTOX_Neonicotinoids_Mortality_raw.csv")
-#2
-USGS_Stream$datetime <- as.Date(USGS_Stream$datetime, format = "%y%m%d")
-create.early.dates <- (function(d) { paste0(ifelse(d > 181231,"19","20"),d) })
-USGS_Stream$datetime <- create.early.dates(USGS_Stream$datetime)
-USGS_Stream$datetime <- as.Date(USGS_Stream$datetime, format = "%Y%m%d")
+PeterPaul_Processed <-read.csv("../Data/Processed/NTL-LTER_Lake_Nutrients_PeterPaul_Processed.csv")
+PeterPaul_Gathered <- read.csv("../Data/Processed/NTL-LTER_Lake_Nutrients_PeterPaulGathered_Processed.csv")
+EPAtox <- read.csv("../Data/Raw/ECOTOX_Neonicotinoids_Mortality_raw.csv")
+USGS.flow.data <- read.csv("../Data/Raw/USGS_Site02085000_Flow_Raw.csv")
+#2 Format Date
+USGS.flow.data$datetime <- as.Date(USGS.flow.data$datetime, format = "%m/%d/%y") 
+USGS.flow.data$datetime <- format(USGS.flow.data$datetime, "%y%m%d")
 
+create.early.dates <- (function(d) {
+       paste0(ifelse(d > 181231,"19","20"),d)
+       })
+USGS.flow.data$datetime <- create.early.dates(USGS.flow.data$datetime)
+
+USGS.flow.data$datetime <- as.Date(USGS.flow.data$datetime, format = "%Y%m%d") 
+
+
+class(PeterPaul_Gathered$sampledate)
 PeterPaul_Processed$sampledate<-as.Date(PeterPaul_Processed$sampledate, format = "%Y%m%d")
+PeterPaul_Gathered$sampledate<-as.Date(PeterPaul_Gathered$sampledate, format = "%Y-%m-%d")
 # EPAtox$Pub..Year <- factor(EPAtox$Pub..Year, format = '%Y')
 
 ```
@@ -54,6 +63,8 @@ PeterPaul_Processed$sampledate<-as.Date(PeterPaul_Processed$sampledate, format =
 
 ```{r}
 #3
+QYtheme <- theme_classic(base_size= 14) +
+  theme(axis.text = element_text(color = "black"))
 
 ```
 
@@ -65,10 +76,22 @@ Hint: a good way to build graphs is to make them ugly first and then create more
 4. [NTL-LTER] Plot total phosphorus by phosphate, with separate aesthetics for Peter and Paul lakes. Add a line of best fit and color it black.
 
 ```{r}
-#4
+#4 PO4 (x)is phosphate, and TP (y) is phosphorus
+library(viridis)
 PeterPaulP_PO4 <- 
-  ggplot(subset(PeterPaul_Processed, nutients==), aes(x=))
-facet_wrap(vars(lakename), ncol = 2)
+  ggplot(PeterPaul_Processed, aes(x= po4, y=tp_ug,color=lakename))+
+  xlim(0, 50)+
+  geom_point()+
+  scale_color_manual(values=c("#E69F00", "#56B4E9"))+
+  # scale_shape_manual(values = c(21, 23))+
+  # scale_fill_viridis(option = 'magma', direction = -1) +
+  geom_smooth(method=lm, color="black", se=F)+
+ labs(y=expression(paste('Total ',PO[4]^{'3-'}, ' (',mu, 'g/L) ')), x=expression(paste('Total P ', '(',mu, 'g/L) ')), color="Lake Name")+
+  #scale_color_discrete(name="Lake Name")+
+  QYtheme
+  
+  
+print(PeterPaulP_PO4)
 ```
 
 
@@ -76,7 +99,26 @@ facet_wrap(vars(lakename), ncol = 2)
 
 ```{r}
 #5
+nutrient_name <- c(
+  'nh34' = "Ammonium NH4",
+  'no23' =" Nitrate NO3",
+  'po4' = "Phosphate PO4",
+  'tn_ug' = "Total N",
+   'tp_ug' = "Total P"
+)
 
+PeterNutrients <- 
+  ggplot(subset(PeterPaul_Gathered, lakename = 'Paul Lake'))+
+  geom_point(aes(x=PeterPaul_Gathered$sampledate, y= PeterPaul_Gathered$concentration, color=depth))+
+   facet_wrap(vars(nutrient), labeller = as_labeller(nutrient_name))+
+  labs(x= expression("Peter Lake Sample Date"), y= expression(paste('Peter Lake Nutrient Concentrations', '(',mu, 'g/L) ')))+
+  scale_x_date(limits = as.Date(c("1991-05-01", "2016-08-31")),
+date_breaks = "36 months", date_labels = " %Y")+
+   theme_bw()+
+  theme(axis.text.x=element_text(angle = 45, hjust = 1))
+ 
+  
+print(PeterNutrients)
 ```
 
 
@@ -84,7 +126,38 @@ facet_wrap(vars(lakename), ncol = 2)
 
 ```{r}
 #6
+library(ggpubr)
+library(gridExtra)
+colnames(USGS.flow.data) <- c("agency_cd", "site_no", "datetime", "discharge.max", "discharge.max.approval", "discharge.min", "discharge.min.approval",
+"discharge.mean", "discharge.mean.approval",
+"gage.height.max", "gage.height.max.approval",
+"gage.height.min", "gage.height.min.approval",
+"gage.height.mean", "gage.height.mean.approval")
+DischargeLine <- 
+  ggplot(USGS.flow.data, aes(x= datetime, y=discharge.mean, na.rm=TRUE))+
+  ylim(0,500)+
+  scale_x_date(limits = as.Date(c("2004-05-01", "2018-12-31")),
+date_breaks = "10 months", date_labels = "%Y-%m")+
+  geom_point(alpha = 0.4, size=0.6)+
+  geom_line(color='black', alpha=0.6)+
+  labs(x= expression("Date"), y= expression(paste('Mean Discharge (', ft^3,'/s)')))+
+theme_bw(base_size= 12)+
+    theme(axis.text.x=element_text(angle = 45, hjust = 1))
 
+  
+DischargeSmooth <-
+    ggplot(USGS.flow.data, aes(x= datetime, y=discharge.mean, na.rm=TRUE))+
+  ylim(0,500)+
+  scale_x_date(limits = as.Date(c("2004-05-01", "2018-12-31")),
+date_breaks = "10 months", date_labels = "%Y-%m")+
+  geom_point(alpha = 0.4, size=0.6)+
+  geom_smooth(alpha=0.6)+
+  labs(x= expression("Date"), y= expression(paste('Mean Discharge (', ft^3,'/s)')))+
+theme_bw(base_size= 12)+
+    theme(axis.text.x=element_text(angle = 45, hjust = 1))
+
+ggarrange(DischargeLine,DischargeSmooth, nrow=2,labels = c("     Lines for Discharge Mean", "LOESS Smooth For Discharge Mean"),
+          font.label = list(size = 10, color = "red3"), vjust=2)
 ```
 Question: How do these two types of lines affect your interpretation of the data?
 
@@ -94,6 +167,24 @@ Question: How do these two types of lines affect your interpretation of the data
 
 ```{r}
 #7 
+class(EPAtox$Conc..Mean..Std.)
+
+ChemicalConc <- EPAtox %>%
+  group_by(Chemical.Name, Conc..Mean..Std.) %>%
+  summarise(sd=sd(Conc..Mean..Std.),
+            mean=mean(Conc..Mean..Std.))
+ChemicalC <- 
+  ggplot(EPAtox)+
+  geom_bar(aes(x=Chemical.Name, y=Conc..Mean..Std.), position = 'dodge', stat = 'summary', fun.y='mean')+
+  labs(x= expression("Chemicals"), y= expression('Mean Concentration (ppm)'), hjust=1)+
+  theme(axis.text.x=element_text(angle = 45, hjust = 1))
+
+plot1 <- 
+  ggplot(ChemicalConc, aes(x=Chemical.Name, y=mean))+
+  geom_bar(stat = "identity", position = "dodge") + 
+geom_errorbar(aes(ymin = mean-sd, ymax = mean+sd),position = "dodge")
+
+print(plot1)
 
 ```
 

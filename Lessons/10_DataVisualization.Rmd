@@ -41,7 +41,7 @@ print(O3plot1)
 
 O3plot2 <- ggplot(EPAair) +
   geom_point(aes(x = Date, y = Ozone)) +
-  theme_bw()
+  theme_bw() #background white
 print(O3plot2)
 
 O3plot3 <- ggplot(EPAair) +
@@ -51,7 +51,7 @@ print(O3plot3)
 
 O3plot4 <- ggplot(EPAair) +
   geom_point(aes(x = Date, y = Ozone)) +
-  theme_classic()
+  theme_classic() #no grids totally blank
 print(O3plot4)
 ```
 
@@ -66,7 +66,9 @@ If you would like to set a common theme across all plots in your analysis sessio
 ```{r, fig.height = 3, fig.width = 4, warning = FALSE}
 mytheme <- theme_classic(base_size = 14) +
   theme(axis.text = element_text(color = "black"), 
-        legend.position = "top") #alternative: legend.position + legend.justification
+        legend.position = "top")
+    #legend.position = c(1,1), legend.justification = c(1,1)
+#alternative: legend.position + legend.justification
 
 # options: call the theme in each plot or set the theme at the start. 
 
@@ -93,9 +95,11 @@ O3plot7 <- ggplot(EPAair, aes(x = Date, y = Ozone)) +
             ymin = 0, ymax = 50, fill = "green") +
   geom_rect(xmin = as.Date("2016-01-01"), xmax = as.Date("2020-01-01"), 
             ymin = 50, ymax = 100, fill = "yellow") +
+  # put geom_rect ealier than geom_point就不会覆盖住
   geom_point() +
   geom_text(x = as.Date("2019-01-01"), y = 45, label = "good", hjust = 1, fontface = "bold") +
   geom_text(x = as.Date("2019-01-01"), y = 95, label = "moderate", hjust = 1, fontface = "bold") +
+  #vjust hjust, horizonal just
   scale_x_date(limits = as.Date(c("2017-01-01", "2018-12-31")), 
     date_breaks = "2 months", date_labels = "%b %y") +
   ylab(expression("O"[3]* " AQI Value")) +
@@ -115,9 +119,9 @@ There are several color palettes that are designed to be more effective than pal
 Perception is key! Choose palettes that are visually pleasing and will communicate what you are hoping your audience to perceive. Hint: base R palettes are not ideal.
 
 ```{r, warning = FALSE}
-#install.packages("viridis")
-#install.packages("RColorBrewer")
-#install.packages("colormap")
+install.packages("viridis")
+install.packages("RColorBrewer")
+install.packages("colormap")
 library(viridis)
 library(RColorBrewer)
 library(colormap)
@@ -138,11 +142,13 @@ print(NvsP)
 NvsP2 <-
   ggplot(PeterPaul.chem.nutrients, aes(x = tp_ug, y = tn_ug, color = depth, shape = lakename)) +
   geom_point(alpha = 0.8, size = 3) +
-  #xlab() +
-  #ylab() +
+  xlab(expression("Total P (\U003Bg/L)")) +
+  ylab(expression("Total N (\U003Bg/L)")) +
+  #labs(shape="lake", fill=depth)
   # change your legend labels here
-  scale_shape_manual(values = c(15, 17)) +
+  scale_shape_manual(values = c(21, 23)) +
   #scale_color_distiller(palette = "Blues", direction = 1) + # use scale_color_brewer for discrete variables
+  
   scale_color_viridis(option = "magma", direction = -1) +
   theme(legend.position = "right", 
         legend.text = element_text(size = 12), legend.title = element_text(size = 12))
@@ -157,7 +163,8 @@ Nutrientplot <-
 # place your additional edits here
   scale_y_continuous(expand = c(0, 0)) +
   #scale_color_brewer(palette = "YlGnBu") +
-  #scale_color_manual(values = c("#7fcdbb", "#41b6c4", "#1d91c0", "#225ea8", "#0c2c84")) +
+  scale_color_manual(values = c("#7fcdbb", "#41b6c4", "#1d91c0", "#225ea8", "#0c2c84")) +
+  #say every colour names if you want to mannually change.
   #scale_color_viridis(discrete = TRUE) +
   theme(legend.position = "right")
 print(Nutrientplot)
@@ -181,7 +188,7 @@ print(PMplot.faceted)
 In situations where facets don't fill our needs to place multiple plots on a page, we can use the package `gridExtra` to arrange plots. The `grid.arrange` function is extremely flexible in its ability to arrange plots in specific configurations. A useful guide can be found here: https://cran.r-project.org/web/packages/egg/vignettes/Ecosystem.html.
 
 ```{r, fig.height = 7, fig.width = 6}
-#install.packages("gridExtra")
+install.packages("gridExtra")
 library(gridExtra)
 grid.arrange(NvsP2, Nutrientplot)
 grid.arrange(O3plot7, PMplot.faceted)
