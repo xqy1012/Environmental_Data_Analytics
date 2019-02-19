@@ -6,7 +6,9 @@ geometry: margin=2.54cm
 editor_options: 
   chunk_output_type: console
 ---
-
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE, warning = FALSE, message = FALSE)
+```
 ## OVERVIEW
 
 This exercise accompanies the lessons in Environmental Data Analytics (ENV872L) on data wrangling. 
@@ -89,7 +91,7 @@ PeterPaulP_PO4 <-
  labs(y=expression(paste('Total ',PO[4]^{'3-'}, ' (',mu, 'g/L) ')), x=expression(paste('Total P ', '(',mu, 'g/L) ')), color="Lake Name")+
   #scale_color_discrete(name="Lake Name")+
   QYtheme
-  
+  #defaul color
   
 print(PeterPaulP_PO4)
 ```
@@ -111,9 +113,10 @@ PeterNutrients <-
   ggplot(subset(PeterPaul_Gathered, lakename = 'Paul Lake'))+
   geom_point(aes(x=PeterPaul_Gathered$sampledate, y= PeterPaul_Gathered$concentration, color=depth))+
    facet_wrap(vars(nutrient), labeller = as_labeller(nutrient_name))+
-  labs(x= expression("Peter Lake Sample Date"), y= expression(paste('Peter Lake Nutrient Concentrations', '(',mu, 'g/L) ')))+
+  labs(x= expression("Peter Lake Sample Date"), y= expression(paste('Peter Lake Nutrient Concentrations', '(',mu, 'g/L) ')), color= 'Depth(m)')+
   scale_x_date(limits = as.Date(c("1991-05-01", "2016-08-31")),
 date_breaks = "36 months", date_labels = " %Y")+
+  scale_color_viridis()+
    theme_bw()+
   theme(axis.text.x=element_text(angle = 45, hjust = 1))
  
@@ -161,7 +164,7 @@ ggarrange(DischargeLine,DischargeSmooth, nrow=2,labels = c("     Lines for Disch
 ```
 Question: How do these two types of lines affect your interpretation of the data?
 
-> Answer:
+> Answer: From the plot data, we know that most of the points are concentrate at a low value of y axis, therefore, when using geom line to connect them from point to point, we can hardly see the distinction at the bottom of the graph; When applying the geom smooth function, it generates the locally estimated scatterplot smoothing (LOESS), which allows to see a moving regression of the data point trend. The geom smooth may provide better interpretation of the data.
 
 7. [ECOTOX Neonicotinoids] Plot the concentration, divided by chemical name. Choose a geom that accurately portrays the distribution of data points.
 
@@ -174,17 +177,19 @@ ChemicalConc <- EPAtox %>%
   summarise(sd=sd(Conc..Mean..Std.),
             mean=mean(Conc..Mean..Std.))
 ChemicalC <- 
-  ggplot(EPAtox)+
-  geom_bar(aes(x=Chemical.Name, y=Conc..Mean..Std.), position = 'dodge', stat = 'summary', fun.y='mean')+
-  labs(x= expression("Chemicals"), y= expression('Mean Concentration (ppm)'), hjust=1)+
+  ggplot(EPAtox, aes(x=Chemical.Name, y=Conc..Mean..Std.))+
+  geom_boxplot(fill='#A4A4A4', color="black", outlier.size = 1)+
+  ylim(0,1500)+
+  labs(x= expression("Chemicals"), y= expression('Mean Concentration (mg/L)'), hjust=1)+
+  QYtheme+
   theme(axis.text.x=element_text(angle = 45, hjust = 1))
 
-plot1 <- 
-  ggplot(ChemicalConc, aes(x=Chemical.Name, y=mean))+
-  geom_bar(stat = "identity", position = "dodge") + 
-geom_errorbar(aes(ymin = mean-sd, ymax = mean+sd),position = "dodge")
+# plot1 <- 
+#   ggplot(ChemicalConc, aes(x=Chemical.Name, y=mean))+
+#   geom_bar(stat = "identity", position = "dodge") + 
+# geom_errorbar(aes(ymin = mean-sd, ymax = mean+sd),position = "dodge")
 
-print(plot1)
+print(ChemicalC)
 
 ```
 
