@@ -1,12 +1,16 @@
 ---
 title: "Assignment 6: Generalized Linear Models"
-author: "Student Name"
+author: "Qianyi Xia"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
   chunk_output_type: console
 ---
-
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE, warning = FALSE, message = FALSE)
+library(tidyverse)
+library(viridis)
+```
 ## OVERVIEW
 
 This exercise accompanies the lessons in Environmental Data Analytics (ENV872L) on generalized linear models. 
@@ -34,9 +38,16 @@ The completed exercise is due on Tuesday, 26 February, 2019 before class begins.
 
 ```{r}
 #1
+EPA_Neonicotinoids <- read.csv("../Data/Raw/ECOTOX_Neonicotinoids_Mortality_raw.csv")
+
+NTL_Chemistry <-read.csv("../Data/Raw/NTL-LTER_Lake_ChemistryPhysics_Raw.csv")
 
 #2
+QYtheme<- theme_classic(base_size = 14)+
+  theme(axis.text = element_text(color = 'black'),
+        legend.position = "right")
 
+theme_set(QYtheme)
 ```
 
 ## Neonicotinoids test
@@ -50,31 +61,58 @@ Research question: Were studies on various neonicotinoid chemicals conducted in 
 
 ```{r}
 #3
+length(unique(EPA_Neonicotinoids$Chemical.Name))
 
-#4
+#4 
+#Shapiro-Test Normality in Pipe function:
+shapiro.test(EPA_Neonicotinoids$Pub..Year)
+library(dplyr)
+NormalityVar <-
+  EPA_Neonicotinoids %>%
+  group_by(Chemical.Name) %>%
+  summarise(pvalue =shapiro.test(Pub..Year)$p.value)
+NormalityVar
 
-#5
+
+#Frequency Polygon
+ggplot(EPA_Neonicotinoids, aes(x=Pub..Year, color=Chemical.Name))+
+  geom_freqpoly(stat='count', bins=10)
+
+#5 homogeneity of variances
+bartlett.test(EPA_Neonicotinoids$Pub..Year ~ EPA_Neonicotinoids$Chemical.Name)
 
 ```
 
 6. Based on your results, which test would you choose to run to answer your research question?
 
-> ANSWER: 
+> ANSWER: I will use Kruskal-Wallis test for the non-parametric data to test the null hypothesis: all neonicotinoid chemicals conducted in same years. Then maybe run a post-hoc test for analyzing pairwise differences.
 
 7. Run this test below. 
 
 8. Generate a boxplot representing the range of publication years for each chemical. Adjust your graph to make it pretty.
 ```{r}
-#7
+#7 One-Way ANOVA
+kwYear <- kruskal.test(EPA_Neonicotinoids$Pub..Year~ EPA_Neonicotinoids$Chemical.Name)
+kwYear
 
-#8
+#8 BoxPlot
+
+BoxPlot <- 
+  ggplot(EPA_Neonicotinoids, aes(x=Chemical.Name, y= Pub..Year, fill=Chemical.Name))+
+  geom_boxplot()+
+  labs(x= expression("Chemicals"), y= expression(paste('Publish Year')), 
+       fill="Chemical Name")+
+  scale_fill_brewer(palette="Set3")+
+  theme_bw(base_size = 12)+
+  theme(axis.text.x=element_text(angle = 45, hjust = 1))
+print(BoxPlot)
 
 ```
 
 
 9. How would you summarize the conclusion of your analysis? Include a sentence summarizing your findings and include the results of your test in parentheses at the end of the sentence. 
 
-> ANSWER: 
+> ANSWER: We reject the null hypothesis, and conclude that at least one chemical has significant different publish year than other chemicals (Kruskal-Wallis; Chi-squared = 134.15, df=8, p< 0.0001). From the graph we know that chemical Nithiazine and Dinotefuran have a different publish year than other chemicals.
 
 ## NTL-LTER test
 Research question: What is the best set of predictors for lake temperatures in July across the monitoring period at the North Temperate Lakes LTER? 
@@ -89,30 +127,48 @@ Research question: What is the best set of predictors for lake temperatures in J
 
 ```{r}
 #11
-
+DataJuly <- 
+  NTL_Chemistry%>% 
+  filter(daynum>182 & daynum<214) %>% 
+  select(lakename, year4, daynum, depth, temperature_C) %>% 
+  na.omit
+  
 #12
-
+lm1 <- lm(data=DataJuly, temperature_C~ year4 + daynum + depth)
+summary(lm1)
+step(lm1)
 ```
 
 13. What is the final linear equation to predict temperature from your multiple regression? How much of the observed variance does this model explain?
 
-> ANSWER: 
+> ANSWER: The full model with all year, daynum, depth three variables has the lowest AIC score and will be the final model. The model explains 74% of the observed variance.
 
 14. Run an interaction effects ANCOVA to predict temperature based on depth and lakename from the same wrangled dataset.
 
 ```{r}
 #14
-
+anoca.interaction <- lm(data=DataJuly, temperature_C~ depth * lakename)
+summary(anoca.interaction)
 ```
 
 15. Is there an interaction between depth and lakename? How much variance in the temperature observations does this explain?
 
-> ANSWER: 
+> ANSWER: There is an interaction between depth and lake name. The model explains about 79% variance in the temperature observations.
 
 16. Create a graph that depicts temperature by depth, with a separate color for each lake. Add a geom_smooth (method = "lm", se = FALSE) for each lake. Make your points 50 % transparent. Adjust your y axis limits to go from 0 to 35 degrees. Clean up your graph to make it pretty. 
 
-```{r}
+```{r }
 #16
-
+Interactionplot <-
+  ggplot(DataJuly, aes(x= depth, y=temperature_C, color=lakename))+
+  geom_point(alpha=0.5)+
+  geom_smooth (method = "lm", se = FALSE)+
+ scale_y_continuous(limits=c(0,35), breaks=c(0,5,10,15,20,25,30,35))+
+  labs(x= expression("Depth (m)"), y= expression(paste('Temperature (°C)')), 
+       color="Lakes")+
+  scale_color_brewer(palette="Paired")+
+  theme(legend.position = c(0.85, 0.7))
+  
+print(Interactionplot)
 ```
 
