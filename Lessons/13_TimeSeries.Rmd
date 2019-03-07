@@ -87,8 +87,8 @@ Next, we will determine the degree of temporal autocorrelation in our dataset. W
 ```{r}
 # Determine autocorrelation in residuals
 TempTest.auto <- lme(data = PeterPaul.summertemp,
-                     temperature_C ~ sampledate * lakename, 
-                     random = ~1|Week)
+                     temperature_C ~ sampledate * lakename, #fixed effect, only this line is ANCOVA
+                     random = ~1|Week)# Random Effect
 TempTest.auto
 
 ACF(TempTest.auto)
@@ -131,6 +131,7 @@ ggplot(PeterPaul.summertemp, aes(x = sampledate, y = temperature_C, color = lake
   geom_point() +
   scale_color_manual(values = c("#7fcdbb", "#253494")) +
   geom_abline(intercept = 20.47, slope = 0.0001)
+#put equation, change axis, think about interpreting mix effects model.
 ```
 
 Question: How would you interpret the collective results of your mixed effects model in the context of the study question?
