@@ -21,6 +21,7 @@ getwd()
 library(tidyverse)
 #install.packages("trend")
 library(trend)
+# In HW using location for random effect.
 
 
 PeterPaul.nutrients <- read.csv("./Data/Processed/NTL-LTER_Lake_Nutrients_PeterPaul_Processed.csv")
@@ -52,7 +53,7 @@ theme_set(mytheme)
 
 In many environmental datasets (especially climate and hydrology), we might not expect a linear trend in the response variable over time. In this case, we will need to employ a nonparametric test to determine whether there is a monotonic trend (i.e., consistent increase or decrease but not necessarily linear) over time. We will illustrate a few examples of nonparametric trend tests today with the `trend` package. 
 
-A vignette for the `trend` package can be found here: https://cran.r-project.org/web/packages/trend/vignettes/trend.pdf. More details here: https://cran.r-project.org/web/packages/trend/trend.pdf.
+A vignette for the `trend` package can be found here: #nice  https://cran.r-project.org/web/packages/trend/vignettes/trend.pdf. More details here: https://cran.r-project.org/web/packages/trend/trend.pdf.
 
 We will run a Mann-Kendall and a Seasonal Mann-Kendall test today, but there are additional variants of these tests within the package including a correlated Seasonal Mann-Kendall test, a multivariate Mann-Kendall test, a partial Mann-Kendall test, a partial correlation trend test, and a Cox and Stuart trend test. Look into the documentation for these tests to determine which one is appropriate for your purposes.
 
@@ -68,6 +69,7 @@ PeterPaul.nutrients.surface <-
   filter(!is.na(tp_ug))
 
 # Initial visualization of data
+# A control group of paul lake, the control of seasons, land use change, etc. 
 ggplot(PeterPaul.nutrients.surface, aes(x = sampledate, y = tp_ug, color = lakename)) + 
   geom_point() +
   scale_color_manual(values = c("#7fcdbb", "#253494"))
@@ -76,7 +78,7 @@ ggplot(PeterPaul.nutrients.surface, aes(x = sampledate, y = tp_ug, color = laken
 Peter.nutrients.surface <- filter(PeterPaul.nutrients.surface, lakename == "Peter Lake")
 Paul.nutrients.surface <- filter(PeterPaul.nutrients.surface, lakename == "Paul Lake")
 
-# Run a Mann-Kendall test
+# Run a Mann-Kendall test; H0: there is no trend overtime, so in this case, we reject the null hypothesis. Z is positive, we see a positive trend over time.
 mk.test(Peter.nutrients.surface$tp_ug)
 
 ```
@@ -86,10 +88,10 @@ However, it looks like there might be a breakpoint in our dataset. Further, we k
 ### Pettitt's Test
 Pettitt's test is also included in the `trend` package. This nonparametric test will determine whether there is a shift in the central tendency of the time series and will tell us at what point the changepoint occurs (if it detects one). Note: Pettitt's Test will only test for one changepoint, and further tests must be run if multiple change points are suspected.
 ```{r}
-# Test for change point
+# Test for change point #there is a detectable change point , the biggest change
 pettitt.test(Peter.nutrients.surface$tp_ug)
 
-# Run separate Mann-Kendall for each change point
+# Run separate Mann-Kendall for each change point 
 mk.test(Peter.nutrients.surface$tp_ug[1:34])
 mk.test(Peter.nutrients.surface$tp_ug[35:132])
 
@@ -97,9 +99,10 @@ mk.test(Peter.nutrients.surface$tp_ug[35:132])
 pettitt.test(Peter.nutrients.surface$tp_ug[35:132])
 
 # Run another Mann-Kendall for the second change point
-mk.test(Peter.nutrients.surface$tp_ug[35:113])
-mk.test(Peter.nutrients.surface$tp_ug[114:132])
+mk.test(Peter.nutrients.surface$tp_ug[35:113]) #a increasing trend
+mk.test(Peter.nutrients.surface$tp_ug[114:132]) #non-significant trend
 
+#1. looking at change point; 2, looking at a trend in different way of seperating
 # Run the same test for Paul Lake. 
 mk.test(Paul.nutrients.surface$tp_ug)
 pettitt.test(Paul.nutrients.surface$tp_ug)
@@ -107,7 +110,11 @@ pettitt.test(Paul.nutrients.surface$tp_ug)
 # Add vertical lines to the original graph to represent change points
 ggplot(PeterPaul.nutrients.surface, aes(x = sampledate, y = tp_ug, color = lakename)) + 
   geom_point() +
-  scale_color_manual(values = c("#7fcdbb", "#253494"))
+  scale_color_manual(values = c("#7fcdbb", "#253494"))+
+  geom_vline(xintercept = as.Date('1993-05-26'),
+             color='#253494', lty=2)+
+  geom_vline(xintercept = as.Date('1998-01-01'),
+             color='#253494', lty=2)
 
 ```
 ### Seasonal Mann-Kendall
@@ -161,8 +168,9 @@ USGS.flow.data.timeseries <- ts(USGS.flow.data.interpolated$Discharge,
 
 # Run a Seasonal Mann-Kendall test
 USGS.smktest <- smk.test(USGS.flow.data.timeseries)
-USGS.smktest
+USGS.smktest #overall trend, the farther away Z score from 0, the stronger the trend., S is the addition to change from point to point, we see an increase trend but we have a lot of variability on that.
 summary(USGS.smktest)
+# in Winter, we see greatest increase in discharge; 
 ```
 
 Interpreting results of the Seasonal Mann-Kendall Test: 
