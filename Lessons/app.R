@@ -43,7 +43,7 @@ ui <- fluidPage(
 
 # server
 server <- function(input, output) {
-   
+ #some analogue between render function and output, have some reactive thing.  
    output$dist <- renderPlot({ # adjust the number of bins based on the sample size
      
      n <- input$n
